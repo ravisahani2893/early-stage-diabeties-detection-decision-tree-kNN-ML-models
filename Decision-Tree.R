@@ -2,9 +2,9 @@
 # Email: ravisahani2893@gmail.com
 
 install.packages("corrplot")
-install.packages("rpart.plot")
 install.packages("caret")
 install.packages("rpart plot")
+install.packages("RWeka")
 library(ggplot2)
 library(dplyr)
 library(tidyr)
@@ -12,6 +12,7 @@ library(corrplot)
 library(rpart)
 library(rpart.plot)
 library(caret)
+library(RWeka)
 
 diabeties_data_set <- read.csv("data/diabetes_data_upload 2.csv")
 
@@ -61,6 +62,12 @@ diabeties_data_set <- diabeties_data_set %>%
 # Check whether the binary variables are successfully converted to factor data type or not for one variable as an example.
 is.factor(diabeties_data_set$Polydipsia) 
 
+convert_to_factor <- function(var) {
+  is.factor(diabeties_data_set[[var]])
+
+  as.factor(diabeties_data_set[[var]])
+}
+convert_to_factor("Gender")
 
 # Plot all binary variables like Polyuria, Polydipsia etc to visualize their distributions.
 
@@ -304,3 +311,21 @@ f1_score <- 2 * ((precision * recall) / (precision + recall))
 f1_score
 
 
+
+# Improving Model Performance
+printcp(model_training)
+
+
+
+optimal_cp_value <- model_training$cptable[which.min(model_training$cptable[,"xerror"]),"CP"]
+cat("Optimal CP:", optimal_cp_value, "\n")
+
+pruned_tree <- prune(model_training, cp = optimal_cp_value)
+
+rpart.plot(pruned_tree, extra = 106, main = "Pruned Decision Tree")
+
+pred_class_pruned <- predict(pruned_tree, diabeties_data_test, type = "class")
+
+conf_mat_pruned <- confusionMatrix(pred_class_pruned, diabeties_data_test$class)
+print(conf_mat_pruned)
+print(conf_matrix)
