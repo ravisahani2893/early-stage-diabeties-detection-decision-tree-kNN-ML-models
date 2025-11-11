@@ -1,6 +1,11 @@
+# Author: RaviKumar Sahani
+# Email: ravisahani2893@gmail.com
+
+install.packages("corrplot")
 library(ggplot2)
 library(dplyr)
 library(tidyr)
+library(corrplot)
 
 diabeties_data_set <- read.csv("data/diabetes_data_upload 2.csv")
 
@@ -192,8 +197,34 @@ plot_vs_class <- function(var) {
 table(diabeties_data_set$class)
 
 
-# Apply to all binary variables
+# Apply plot_vs_class function to all binary variables
 for (individual_feature in all_binary_features) {
   print(plot_vs_class(individual_feature))
 }
-table(diabeties_data_set$Polydipsia)
+
+# Check for correlation between numeric variables like Age and Gender
+diabeties_data_set$Gender_numeric <- ifelse(diabeties_data_set$Gender == "Male", 1, 0)
+diabeties_data_set
+
+numneric_variables <- c("Age","Gender_numeric")
+numneric_variables
+
+# Correlation between Age and Gender. The correlation matrix shows how strongly numeric variables are related to each other. And in decisionn tree, variables which are uncorrelated are preferred for splitting nodes to improve model performance.
+cor_matrix <- cor(diabeties_data_set[, numneric_variables])
+cor_matrix
+corrplot(cor_matrix, method = "color", type = "upper", tl.cex = 0.8)
+
+
+
+# Summary counts for each binary variable by class
+feature_class_summary <- diabeties_data_set %>%
+  select(all_binary_features, class) %>%
+  pivot_longer(cols = all_binary_features, names_to = "Feature", values_to = "Value") %>%
+  group_by(Feature, Value, class) %>%
+  summarise(Count = n()) %>%
+  arrange(Feature)
+
+
+feature_class_summary
+
+
