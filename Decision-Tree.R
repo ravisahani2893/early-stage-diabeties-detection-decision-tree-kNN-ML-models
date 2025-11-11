@@ -228,3 +228,38 @@ feature_class_summary <- diabeties_data_set %>%
 feature_class_summary
 
 
+set.seed(12345)
+
+
+
+check_class_percentage_in_test_train_data_set <- function(dataset) {
+  class_count <- table(dataset$class)
+  total_sum <- sum(class_count)
+  class_proportions <- (class_count / total_sum) * 100
+  return(class_proportions)
+}
+
+total_data_count <- nrow(diabeties_data_set)
+total_data_count
+diabeties_data_set_rand <- diabeties_data_set[order(runif(total_data_count)), ]
+
+View(diabeties_data_set_rand)
+View(diabeties_data_set)
+
+
+summary(diabeties_data_set$Polyuria)
+summary(diabeties_data_set_rand$Polyuria)
+
+head(diabeties_data_set)
+head(diabeties_data_set_rand)
+
+
+# Lets split the data into training and testing sets. Using 80% of the data for training and 20% for testing.
+
+
+
+diabeties_data_train <- diabeties_data_set_rand[1:416, ]
+diabeties_data_test <- diabeties_data_set_rand[417:520, ]
+
+count(diabeties_data_train)
+count(diabeties_data_test)
