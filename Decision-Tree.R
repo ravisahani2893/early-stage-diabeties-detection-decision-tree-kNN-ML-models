@@ -175,3 +175,25 @@ ggplot(diabeties_data_set, aes(x = Age)) +
 
 # Check summary statistics for Age variable to identify outliers if any.
 summary(diabeties_data_set$Age)
+
+# Explore Gender variable in the data set. Plot bar plot to visualize its distribution.
+table(diabeties_data_set$Gender)
+ggplot(diabeties_data_set, aes(x = Gender)) +
+  geom_bar(fill = "purple") +
+  labs(title = "Gender Distribution", x = "Gender", y = "Count")
+
+# Plot all binary variables like Polyuria, Ploydipsia etc vs 'class' target variable
+plot_vs_class <- function(var) {
+  ggplot(diabeties_data_set, aes_string(x = var, fill = "class")) +
+    geom_bar(position = "dodge") +
+    labs(title = paste(var, "vs Diabetes Class"), x = var, y = "Count")
+}
+
+table(diabeties_data_set$class)
+
+
+# Apply to all binary variables
+for (individual_feature in all_binary_features) {
+  print(plot_vs_class(individual_feature))
+}
+table(diabeties_data_set$Polydipsia)
