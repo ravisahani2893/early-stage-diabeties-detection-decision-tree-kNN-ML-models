@@ -2,10 +2,16 @@
 # Email: ravisahani2893@gmail.com
 
 install.packages("corrplot")
+install.packages("rpart.plot")
+install.packages("caret")
+install.packages("rpart plot")
 library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(corrplot)
+library(rpart)
+library(rpart.plot)
+library(caret)
 
 diabeties_data_set <- read.csv("data/diabetes_data_upload 2.csv")
 
@@ -263,3 +269,38 @@ diabeties_data_test <- diabeties_data_set_rand[417:520, ]
 
 count(diabeties_data_train)
 count(diabeties_data_test)
+
+print(check_class_percentage_in_test_train_data_set(diabeties_data_train))
+print(check_class_percentage_in_test_train_data_set(diabeties_data_test))
+
+
+model_training <- rpart(class ~ ., 
+                  data = diabeties_data_train, 
+                  method = "class", 
+                  parms = list(split = "gini"),   # Using Gini Index
+                  control = rpart.control(cp = 0.01))
+
+model_training
+summary(model_training)
+rpart.plot(model_training, digits = 4)
+
+rpart.plot(model_training, digits = 4, fallen.leaves = TRUE,
+type = 3, extra = 101)
+
+# Make Predictions on Test Data ----
+model_prediction <- predict(model_training, diabeties_data_test, type = "class")
+
+summary(model_prediction)
+
+# Evaluate Model Performance ----
+conf_matrix <- confusionMatrix(model_prediction, diabeties_data_test$class)
+print(conf_matrix)
+
+# Extract and Print Metrics ----
+accuracy <- conf_matrix$overall["Accuracy"]
+precision <- conf_matrix$byClass["Pos Pred Value"]
+recall <- conf_matrix$byClass["Sensitivity"]
+f1_score <- 2 * ((precision * recall) / (precision + recall))
+f1_score
+
+
