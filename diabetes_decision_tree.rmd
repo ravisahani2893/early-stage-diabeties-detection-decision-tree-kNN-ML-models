@@ -1,0 +1,207 @@
+---
+title: "Decision Tree Classification on Early Diabetes Prediction Dataset"
+author: "RaviKumar Sahani"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(corrplot)
+library(rpart)
+library(rpart.plot)
+library(caret)
+```
+
+# 1. Introduction
+
+This project develops a **Decision Tree classifier** to predict early diabetes using a dataset of patient demographics and symptoms.  
+The dataset includes numeric variables like `Age`, categorical variables like `Gender`, and **binary symptoms** (e.g., Polyuria, Polydipsia).
+
+---
+
+# 2. Dataset Overview
+
+```{r load-data}
+diabeties_data_set <- read.csv("data/diabetes_data_upload 2.csv")
+
+# Quick overview
+head(diabeties_data_set)
+str(diabeties_data_set)
+summary(diabeties_data_set)
+colSums(is.na(diabeties_data_set))
+table(diabeties_data_set$class)
+diabeties_data_set$class <- factor(diabeties_data_set$class)
+```
+
+The dataset has no missing values. The target variable `class` has two categories: Negative (no diabetes) and Positive (diabetes).  
+
+---
+
+# 3. Exploratory Data Analysis (EDA)
+
+## 3.1 Binary Features Distribution
+
+```{r binary-features}
+binary_features <- setdiff(names(diabeties_data_set), c("Age", "Gender", "class"))
+diabeties_data_set <- diabeties_data_set %>%
+  mutate(across(all_of(binary_features), factor))
+
+# Reshape for plotting
+plot_data <- diabeties_data_set %>%
+  select(all_of(binary_features)) %>%
+  pivot_longer(cols = everything(), names_to = "Feature", values_to = "Status")
+
+# Faceted bar plot
+ggplot(plot_data, aes(x = Status)) +
+  geom_bar(fill = "red") +
+  facet_wrap(~ Feature, scales = "free_x") +
+  labs(title = "Distribution of Symptoms", x = "Status", y = "Count") +
+  theme_minimal()
+```
+
+## 3.2 Age Distribution
+
+```{r age-distribution}
+ggplot(diabeties_data_set, aes(x = Age)) +
+  geom_histogram(fill = "orange", bins = 30) +
+  labs(title = "Age Distribution", x = "Age", y = "Count")
+
+# Boxplot Age vs Class
+ggplot(diabeties_data_set, aes(x = class, y = Age, fill = class)) +
+  geom_boxplot() +
+  labs(title = "Age vs Diabetes Class", x = "Class", y = "Age")
+```
+
+## 3.3 Correlation
+
+```{r correlation}
+diabeties_data_set$Gender_numeric <- ifelse(diabeties_data_set$Gender == "Male", 1, 0)
+numeric_vars <- c("Age", "Gender_numeric")
+
+cor_matrix <- cor(diabeties_data_set[, numeric_vars])
+cor_matrix
+corrplot(cor_matrix, method = "color", type = "upper", tl.cex = 0.8)
+```
+
+---
+
+# 4. Train-Test Split
+
+```{r train-test}
+set.seed(1234)
+train_index <- createDataPartition(diabeties_data_set$class, p = 0.8, list = FALSE)
+
+train <- diabeties_data_set[train_index, ]
+test  <- diabeties_data_set[-train_index, ]
+
+# Function to check class distribution
+check_class_split <- function(data) {
+  prop <- prop.table(table(data$class)) * 100
+  round(prop, 2)
+}
+
+check_class_split(train)
+check_class_split(test)
+```
+
+---
+
+# 5. Decision Tree Model
+
+```{r decision-tree}
+dt_model <- rpart(
+  class ~ .,
+  data = train,
+  method = "class",
+  parms = list(split = "gini"),
+  control = rpart.control(cp = 0.01)
+)
+
+# Plot the tree
+rpart.plot(dt_model, extra = 101, fallen.leaves = TRUE, main = "Decision Tree")
+```
+
+---
+
+# 6. Model Evaluation
+
+```{r evaluation}
+pred_unpruned <- predict(dt_model, test, type = "class")
+conf_unpruned <- confusionMatrix(pred_unpruned, test$class)
+conf_unpruned
+
+# Metrics
+acc <- conf_unpruned$overall["Accuracy"]
+prec <- conf_unpruned$byClass["Pos Pred Value"]
+rec <- conf_unpruned$byClass["Sensitivity"]
+f1 <- 2 * (prec * rec) / (prec + rec)
+
+cat("Accuracy:", round(acc, 4), "\n")
+cat("F1 Score:", round(f1, 4), "\n")
+```
+
+---
+
+# 7. Pruning the Tree
+
+```{r pruning}
+# Optimal CP
+printcp(dt_model)
+optimal_cp <- dt_model$cptable[which.min(dt_model$cptable[, "xerror"]), "CP"]
+
+# Prune tree
+dt_pruned <- prune(dt_model, cp = optimal_cp)
+
+# Plot pruned tree
+rpart.plot(dt_pruned, extra = 101, main = "Pruned Decision Tree")
+
+# Evaluate pruned tree
+pred_pruned <- predict(dt_pruned, test, type = "class")
+conf_pruned <- confusionMatrix(pred_pruned, test$class)
+acc_pruned <- conf_pruned$overall["Accuracy"]
+
+cat("Accuracy (Unpruned):", round(acc, 4), "\n")
+cat("Accuracy (Pruned):", round(acc_pruned, 4), "\n")
+```
+
+---
+
+# 8. Feature vs Class Plots
+
+```{r feature-vs-class, results='hide'}
+plot_feature_vs_class <- function(feature_name, data) {
+  ggplot(data, aes_string(x = feature_name, fill = "class")) +
+    geom_bar(position = "dodge") +
+    labs(title = paste(feature_name, "vs Diabetes Class"),
+         x = feature_name, y = "Count") +
+    theme_minimal()
+}
+
+for (feature in binary_features) {
+  print(plot_feature_vs_class(feature, diabeties_data_set))
+}
+```
+
+---
+
+# 9. Discussion
+
+- Dataset contains **binary symptoms and demographic features** suitable for decision tree modeling.  
+- **EDA** highlights clear patterns between symptoms and diabetes class.  
+- **Age** differs slightly between positive and negative classes; **Gender** shows minimal correlation.  
+- **Decision tree** achieved high accuracy; pruning reduced complexity without losing performance.  
+- **Challenges:** managing multiple binary features, visual clarity, and ensuring metrics are interpretable.  
+- **Lessons learned:** Importance of proper EDA, encoding categorical features, and evaluating models with both accuracy and F1 score.
+
+---
+
+# 10. Conclusion
+
+- Decision tree effectively predicts early diabetes.  
+- Visualizations provide insight into important symptoms.  
+- Pruned trees simplify interpretation while maintaining accuracy.  
+- Future work: ensemble models (Random Forest, Gradient Boosting) could improve generalization.
