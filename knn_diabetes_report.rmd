@@ -91,20 +91,39 @@ plot(1:20, accuracy_list, type = "b",
 
 # 6. Discussion
 
-In this project, we performed predictive analysis on early diabetes detection dataset using two machine learning models: Decision Tree & k-Nearest Neigbors(kNN).
+# 6.1 Overview
+In this project, we performed predictive analysis on early diabetes detection dataset using two machine learning models: Decision Tree & k-Nearest Neighbours(KNN). The primary objective was to explore dataset, understand relationship between different features. And build models that accurately classify whether a patients has diabetes or not. To begin with classification, first we have to perform exploratory data analysis(EDA) on the dataset.
 
-The primary objective was to explore dataset, understand relationship between different features. And build the models that accurately classify whether the patients is having diabetes or not. To begin with classification, first we have to perform explorataroy data analysis(EDA) on the dataset.
+# 6.2 Exploratory Data analysis
+EDA helps in understanding the structure of dataset, total numbers of rows, features variable, data type of feature variable(For example: numeric, factor etc), outlier value, target variable and distribution of data in the dataset. 
 
-EDA helps in understanding the structure of dataset, feature types and its distribution. It also helps us understand the total numbers of rows, features variable, data type of feature variable(For example: numeric, factor etc), outlier value, target variable present in the dataset. 
+There are total 17 feature variables, wherein 14 are binary feature variable, 1 numeric feature (Age), 1 character feature (Gender) and class as target variable. For Decision tree model training, we have to convert Binary feature variable (ex: Polyuria, Polydipsia etc) into factors. And for KNN model, we need to convert this variables into numeric. Also, there were no null or missing information in the dataset which highlights that the data is perfect for model training and testing and no cleaning of data is required.
 
-In the dataset, there are total 17 feature variables, wherein 14 are binary feature variable, 1 numeric feature (Age), 1 character feature (Gender) and class as target variable. For Decision tree model training, we need to convert Binary feature variable(Polyuria, Polydipsia etc) to factors. And for k-NN model, we need to convert this variables into numeric. 
+In EDA, Visualizations including Bar plots, Histograms, Boxplots, and Correlation matrices highlighted clarity on the distribution of variables and their relationship with the target class. For example, Age variable was uniformly distributed, while the binary symptom variables displayed noticeable class separation, which is critical for model performance. Also, Correlation analysis confirmed that numeric variables, such as Age and Gender were largely uncorrelated. Indicating that the dataset was suitable for Decision Tree splitting. As uncorrelated features prevent redundant splits and improve model interpretability.
 
-In EDA, Visualizations including bar plots, histograms, boxplots, and correlation matrices highlighted clarity on the distribution of variables and their relationship with the target class. For example, Age variable exhibited a fairly uniform distribution, while the binary symptom variables displayed noticeable class separation, which is critical for model performance.
-Also, Correlation analysis confirmed that numeric variables, such as Age and Gender were largely uncorrelated. Indicating that the dataset was suitable for Decision Tree splitting.As uncorrelated features prevent redundant splits and improve model interpretability.
-
+# 6.3 Data pre-processing and Challenges faced
 After EDA, there were few challenges in Data pre-processing. In decision tree, binary feature variable can be directly used for model training
-after converting it int factors whereas in k-NN model it needs to be converted into numeric datatype first and then normalise it. Normalisation is an important process because k-NN algorithm uses Eucliden distance method for classification. If all the feature variables are not normalised, then euclidean distance will be dominated by the feature having larger value which will lead to misclassification.
+after converting it into factors whereas in KNN modelling it needs to be converted into numeric datatype first and then normalize it. Here, Normalization is an important process because KNN algorithm uses Euclidean distance method for classification. If all the feature variables are not normalized, then Euclidean distance will be dominated by the feature having larger value which will lead to misclassification of target variable.
 
+# 6.4 Model Training and Testing
+For model testing and training, dataset is split into 80%-20% ratio to maintain consistency in model evaluation. And also validated whether the target variable is equally distributed in training and testing dataset. So the model is trained and tested with proportionally to avoid performance metrics. 
+
+# 6.5 Decision Tree model
+Decision tree modelling was easy to interpret and achieved was 87.5% accuracy. Also, Pruning helped reduce the complexity of the tree but accuracy still remained the same. To summarise, unpruned and pruned models achieved similar accuracy, suggesting that the tree was not overfitting significantly.
+
+# 6.6 KNN model
+
+In k-NN modelling, if large 'k' value is selected then the model predicts the majority class regardless of which neighbours are nearest. On the
+other hand, if k = 1 is selected then the model gets easily influenced by noisy data or outliers, leading to frequent misclassification.
+In our case, we achieved 100% accuracy for k=1 value and 86.5% accuracy for k=20. Hence, for balance output k=5(91.3%) was selected so the model does not overfit and under-fit for both large and small value of k.
+
+# 6.7 Evaluation
+
+Model evaluation using confusion matrix, accuracy, precision and F1 score helped us to understand he model performance. Both models achieved high level of accuracy, which shows that the dataset features were informative for predicting diabetes. 
+
+# 6.8 Reflection
+
+Overall, the project helped in understanding the importance of dataset and applying exploratory data analysis for checking and validating all the feature variables in the data. Also, Visualisation helped in understanding data patterns, distributions and the relationships between the variables quickly. It also highlights the potential outliers data that could affect the model performance. Few challenges were faced in pre-processing data where we have to normalize all feature variables for KNN model training. Finally, the performance and accuracy of both the model confirms that the dataset was proved to be ideal for early diabetes predictions as the accuracy of both the model was more than 85%.
 
 
 
