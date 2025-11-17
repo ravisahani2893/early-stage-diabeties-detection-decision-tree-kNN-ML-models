@@ -2,6 +2,7 @@
 title: "K-Nearest Neighbors (KNN) Model – Early Diabetes Prediction"
 author: "RaviKumar Sahani"
 date: "`r Sys.Date()`"
+github: https://github.com/ravisahani2893/early-stage-diabeties-detection-decision-tree-kNN-ML-models
 output: html_document
 ---
 
@@ -15,18 +16,18 @@ library(class)
 # 1. Dataset Overview
 
 ```{r data-overview}
-diabetes <- read.csv("data/diabetes_data_upload 2.csv")
-head(diabetes)
-str(diabetes)
-summary(diabetes)
-colSums(is.na(diabetes))
-table(diabetes$class)
+diabeties_data_set <- read.csv("data/diabetes_data_upload 2.csv")
+head(diabeties_data_set)
+str(diabeties_data_set)
+summary(diabeties_data_set)
+colSums(is.na(diabeties_data_set))
+table(diabeties_data_set$class)
 ```
 
 # 2. Data Preparation
 
 ```{r data-prep}
-knn_data <- diabetes
+knn_data <- diabeties_data_set
 knn_data$class <- as.factor(knn_data$class)
 knn_data$Gender <- ifelse(knn_data$Gender == "Male", 1, 0)
 knn_data$class <- as.numeric(knn_data$class) - 1
@@ -88,10 +89,23 @@ plot(1:20, accuracy_list, type = "b",
      main = "KNN Accuracy for Different K Values")
 ```
 
-# 6. Conclusion and Discussion
+# 6. Discussion
 
-- Dataset characteristics, preprocessing, train-test split.  
-- KNN model mechanism (distance-based).  
-- Accuracy and F1 Score analysis.  
-- Reflection on scaling sensitivity and class balance.
+In this project, we performed predictive analysis on early diabetes detection dataset using two machine learning models: Decision Tree & k-Nearest Neigbors(kNN).
+
+The primary objective was to explore dataset, understand relationship between different features. And build the models that accurately classify whether the patients is having diabetes or not. To begin with classification, first we have to perform explorataroy data analysis(EDA) on the dataset.
+
+EDA helps in understanding the structure of dataset, feature types and its distribution. It also helps us understand the total numbers of rows, features variable, data type of feature variable(For example: numeric, factor etc), outlier value, target variable present in the dataset. 
+
+In the dataset, there are total 17 feature variables, wherein 14 are binary feature variable, 1 numeric feature (Age), 1 character feature (Gender) and class as target variable. For Decision tree model training, we need to convert Binary feature variable(Polyuria, Polydipsia etc) to factors. And for k-NN model, we need to convert this variables into numeric. 
+
+In EDA, Visualizations including bar plots, histograms, boxplots, and correlation matrices highlighted clarity on the distribution of variables and their relationship with the target class. For example, Age variable exhibited a fairly uniform distribution, while the binary symptom variables displayed noticeable class separation, which is critical for model performance.
+Also, Correlation analysis confirmed that numeric variables, such as Age and Gender were largely uncorrelated. Indicating that the dataset was suitable for Decision Tree splitting.As uncorrelated features prevent redundant splits and improve model interpretability.
+
+After EDA, there were few challenges in Data pre-processing. In decision tree, binary feature variable can be directly used for model training
+after converting it int factors whereas in k-NN model it needs to be converted into numeric datatype first and then normalise it. Normalisation is an important process because k-NN algorithm uses Eucliden distance method for classification. If all the feature variables are not normalised, then euclidean distance will be dominated by the feature having larger value which will lead to misclassification.
+
+
+
+
 

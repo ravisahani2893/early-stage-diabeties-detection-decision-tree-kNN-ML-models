@@ -2,6 +2,7 @@
 title: "Decision Tree Classification on Early Diabetes Prediction Dataset"
 author: "RaviKumar Sahani"
 date: "`r Sys.Date()`"
+github: https://github.com/ravisahani2893/early-stage-diabeties-detection-decision-tree-kNN-ML-models
 output: html_document
 ---
 
@@ -87,7 +88,25 @@ cor_matrix
 corrplot(cor_matrix, method = "color", type = "upper", tl.cex = 0.8)
 ```
 
+
+## 3.4 Feature vs Class Plots
+
+```{r feature-vs-class, results='hide'}
+plot_feature_vs_class <- function(feature_name, data) {
+  ggplot(data, aes_string(x = feature_name, fill = "class")) +
+    geom_bar(position = "dodge") +
+    labs(title = paste(feature_name, "vs Diabetes Class"),
+         x = feature_name, y = "Count") +
+    theme_minimal()
+}
+
+for (feature in binary_features) {
+  print(plot_feature_vs_class(feature, diabeties_data_set))
+}
+```
+
 ---
+
 
 # 4. Train-Test Split
 
@@ -170,25 +189,8 @@ cat("Accuracy (Pruned):", round(acc_pruned, 4), "\n")
 
 ---
 
-# 8. Feature vs Class Plots
 
-```{r feature-vs-class, results='hide'}
-plot_feature_vs_class <- function(feature_name, data) {
-  ggplot(data, aes_string(x = feature_name, fill = "class")) +
-    geom_bar(position = "dodge") +
-    labs(title = paste(feature_name, "vs Diabetes Class"),
-         x = feature_name, y = "Count") +
-    theme_minimal()
-}
-
-for (feature in binary_features) {
-  print(plot_feature_vs_class(feature, diabeties_data_set))
-}
-```
-
----
-
-# 9. Discussion
+# 8. Discussion
 
 - Dataset contains **binary symptoms and demographic features** suitable for decision tree modeling.  
 - **EDA** highlights clear patterns between symptoms and diabetes class.  
@@ -199,7 +201,7 @@ for (feature in binary_features) {
 
 ---
 
-# 10. Conclusion
+# 9. Conclusion
 
 - Decision tree effectively predicts early diabetes.  
 - Visualizations provide insight into important symptoms.  
