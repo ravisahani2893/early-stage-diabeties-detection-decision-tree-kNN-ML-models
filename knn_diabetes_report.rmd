@@ -1,0 +1,97 @@
+---
+title: "K-Nearest Neighbors (KNN) Model – Early Diabetes Prediction"
+author: "RaviKumar Sahani"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(dplyr)
+library(caret)
+library(class)
+```
+
+# 1. Dataset Overview
+
+```{r data-overview}
+diabetes <- read.csv("data/diabetes_data_upload 2.csv")
+head(diabetes)
+str(diabetes)
+summary(diabetes)
+colSums(is.na(diabetes))
+table(diabetes$class)
+```
+
+# 2. Data Preparation
+
+```{r data-prep}
+knn_data <- diabetes
+knn_data$class <- as.factor(knn_data$class)
+knn_data$Gender <- ifelse(knn_data$Gender == "Male", 1, 0)
+knn_data$class <- as.numeric(knn_data$class) - 1
+all_binary_features <- setdiff(names(knn_data), c("Age", "Gender", "class"))
+for (var in all_binary_features) {
+  knn_data[[var]] <- ifelse(knn_data[[var]] == "Yes", 1, 0)
+}
+normalize <- function(x) { (x - min(x)) / (max(x) - min(x)) }
+feature_cols <- setdiff(names(knn_data), "class")
+knn_data[feature_cols] <- lapply(knn_data[feature_cols], normalize)
+str(knn_data)
+```
+
+# 3. Train-Test Split
+
+```{r train-test-split}
+set.seed(123)
+train_index <- createDataPartition(knn_data$class, p = 0.8, list = FALSE)
+train_knn <- knn_data[train_index, ]
+test_knn  <- knn_data[-train_index, ]
+train_X <- train_knn %>% select(-class)
+train_y <- train_knn$class
+test_X  <- test_knn %>% select(-class)
+test_y  <- test_knn$class
+prop.table(table(train_y)) * 100
+prop.table(table(test_y)) * 100
+```
+
+# 4. KNN Model – Initial Training (K = 5)
+
+```{r knn-model}
+set.seed(123)
+k_value <- 5
+knn_pred <- knn(train = train_X, test = test_X, cl = train_y, k = k_value)
+conf_knn <- confusionMatrix(as.factor(knn_pred), as.factor(test_y))
+conf_knn
+knn_accuracy <- conf_knn$overall["Accuracy"]
+cat("KNN Accuracy (K = 5):", knn_accuracy, "\n")
+precision <- conf_knn$byClass["Pos Pred Value"]
+recall <- conf_knn$byClass["Sensitivity"]
+f1 <- 2 * ((precision * recall) / (precision + recall))
+cat("F1 Score (K = 5):", round(f1, 4), "\n")
+```
+
+# 5. Hyperparameter Tuning – Find Best K
+
+```{r knn-tuning}
+accuracy_list <- c()
+for (k in 1:20) {
+  pred_k <- knn(train = train_X, test = test_X, cl = train_y, k = k)
+  acc <- mean(pred_k == test_y)
+  accuracy_list[k] <- acc
+  cat("K =", k, " Accuracy:", acc, "\n")
+}
+best_k <- which.max(accuracy_list)
+cat("Best K:", best_k, "with Accuracy:", max(accuracy_list), "\n")
+plot(1:20, accuracy_list, type = "b",
+     xlab = "K Value", ylab = "Accuracy",
+     main = "KNN Accuracy for Different K Values")
+```
+
+# 6. Conclusion and Discussion
+
+- Dataset characteristics, preprocessing, train-test split.  
+- KNN model mechanism (distance-based).  
+- Accuracy and F1 Score analysis.  
+- Reflection on scaling sensitivity and class balance.
+

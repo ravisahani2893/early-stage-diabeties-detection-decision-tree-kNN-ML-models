@@ -105,9 +105,22 @@ ggplot(plot_data, aes(x = Status)) +
   labs(title = "Distribution of Symptoms", x = "Status", y = "Count") +
   theme_minimal()
 
-ggplot(diabeties_data_set, aes(x = Polyuria, fill = class)) +
-  geom_bar(position = "dodge") +
-  labs(title = "Polyuria vs Diabetes Class", x = "Polyuria", y = "Count")
+# Function to plot a binary feature vs class
+plot_feature_vs_class <- function(feature_name, data) {
+  # ggplot bar chart
+  # position = "dodge" separates bars for each class side by side
+  ggplot(data, aes_string(x = feature_name, fill = "class")) +
+    geom_bar(position = "dodge") +
+    labs(title = paste(feature_name, "vs Diabetes Class"),
+         x = feature_name,
+         y = "Count") +
+    theme_minimal()  # clean theme
+}
+
+# Apply the function to all binary features
+for (feature in all_binary_features) {
+  print(plot_feature_vs_class(feature, diabeties_data_set))
+}
 
 # Histogram: Distribution of Age
 # This plot shows the distribution of the 'Age' variable in the dataset.
@@ -147,13 +160,17 @@ set.seed(1234)
 train_index <- createDataPartition(diabeties_data_set$class, p = 0.8, list = FALSE)
 
 
-# Split the data
+# Split 80% data for training
 train <- diabeties_data_set[train_index, ]
 summary(train$class)
-print("Training Class Distribution")
+
+# check Training Class Distribution after splitting dataset in percentage
 check_class_split(train)
+
+# Split the remaining 20% for testing
 test  <- diabeties_data_set[-train_index, ]
-print("Testing Class Distribution")
+
+# check Testing Class Distribution after splitting dataset in percentage
 check_class_split(test)
 
 # ================================
